@@ -1,11 +1,11 @@
 import React, { useRef } from 'react';
 import { InspectionReport } from '../types';
+import { BrandLogo } from './BrandLogo';
 import {
   X,
   Printer,
   Send,
   CheckCircle2,
-  Sparkles,
   Building2,
   User,
   Calendar,
@@ -64,8 +64,8 @@ export const SummaryAndExportModal: React.FC<SummaryAndExportModalProps> = ({
         {/* Modal Top Header */}
         <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-slate-900 text-white rounded-t-3xl">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 rounded-xl font-bold">
-              <Sparkles className="w-5 h-5" />
+            <div className="p-1.5 bg-white text-slate-950 rounded-xl font-bold flex items-center justify-center">
+              <BrandLogo className="w-6 h-6" />
             </div>
             <div>
               <h3 className="font-bold text-base sm:text-lg">Resumo do Relatório de Limpeza</h3>
@@ -96,20 +96,25 @@ export const SummaryAndExportModal: React.FC<SummaryAndExportModalProps> = ({
           {/* Document Header Card */}
           <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-5 rounded-2xl shadow-md border border-slate-800">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-700/80 pb-4">
-              <div>
-                <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-400 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
-                  Relatório de Higienização
-                </span>
-                <h2 className="text-xl font-extrabold mt-1 text-white">{report.propertyName}</h2>
-                <p className="text-xs text-slate-300 mt-1 flex items-center space-x-1">
-                  <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  <span>{report.propertyAddress}</span>
-                </p>
-                {report.wifiName && (
-                  <p className="text-xs text-emerald-300 font-semibold mt-1">
-                    📶 Wi-Fi: {report.wifiName} (Senha: {report.wifiPass || 'Sem senha'})
+              <div className="flex items-start space-x-3">
+                <div className="p-1.5 bg-white rounded-xl shadow-md flex items-center justify-center shrink-0 mt-0.5">
+                  <BrandLogo className="w-8 h-8" />
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-400 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
+                    Relatório de Higienização
+                  </span>
+                  <h2 className="text-xl font-extrabold mt-1 text-white">{report.propertyName}</h2>
+                  <p className="text-xs text-slate-300 mt-1 flex items-center space-x-1">
+                    <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <span>{report.propertyAddress}</span>
                   </p>
-                )}
+                  {report.wifiName && (
+                    <p className="text-xs text-emerald-300 font-semibold mt-1">
+                      📶 Wi-Fi: {report.wifiName} (Senha: {report.wifiPass || 'Sem senha'})
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div className="text-left sm:text-right text-xs space-y-1 bg-slate-800/80 p-3 rounded-xl border border-slate-700/60 w-full sm:w-auto">

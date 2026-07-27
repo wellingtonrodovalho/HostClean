@@ -1,5 +1,6 @@
 import React from 'react';
-import { Sparkles, ClipboardCheck, History, Home, PlusCircle, CheckCircle2 } from 'lucide-react';
+import { ClipboardCheck, History, Home, PlusCircle } from 'lucide-react';
+import { BrandLogo } from './BrandLogo';
 
 interface HeaderNavbarProps {
   activeTab: 'active_checklist' | 'history' | 'properties';
@@ -24,8 +25,8 @@ export const HeaderNavbar: React.FC<HeaderNavbarProps> = ({
         <div className="flex items-center justify-between h-16">
           {/* Brand Logo & Name */}
           <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setActiveTab('active_checklist')}>
-            <div className="p-2 bg-gradient-to-tr from-emerald-500 to-teal-400 rounded-xl shadow-lg text-slate-900 font-bold flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-slate-900" />
+            <div className="p-1.5 bg-white rounded-xl shadow-md border border-slate-200/80 flex items-center justify-center shrink-0">
+              <BrandLogo className="w-7 h-7" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
