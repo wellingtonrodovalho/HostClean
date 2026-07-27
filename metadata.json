@@ -1,0 +1,6 @@
+{
+  "name": "Checklist Limpeza Temporada",
+  "description": "Sistema profissional de checklist de limpeza de imóveis de temporada com controle de estoque, enxoval, registro de avarias, fotos e assinatura digital.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
