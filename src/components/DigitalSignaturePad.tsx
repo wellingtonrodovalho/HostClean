@@ -22,15 +22,22 @@ export const DigitalSignaturePad: React.FC<DigitalSignaturePadProps> = ({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    // Adjust canvas resolution to parent element size to avoid touch coordinate distortion on phones
+    const parent = canvas.parentElement;
+    if (parent) {
+      canvas.width = parent.clientWidth - 16;
+      canvas.height = 180;
+    }
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     // Set line styles
     ctx.strokeStyle = '#0f172a'; // slate-900
-    ctx.lineWidth = 2.5;
+    ctx.lineWidth = 3.0;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-  }, []);
+  }, [signatureDataUrl]);
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
