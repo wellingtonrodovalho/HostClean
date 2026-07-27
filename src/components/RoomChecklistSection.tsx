@@ -17,6 +17,10 @@ import {
   Sparkles,
   Trash2,
   Image as ImageIcon,
+  ChevronLeft,
+  ChevronRight,
+  CheckCheck,
+  Layers,
 } from 'lucide-react';
 
 interface RoomChecklistSectionProps {
@@ -146,6 +150,29 @@ export const RoomChecklistSection: React.FC<RoomChecklistSectionProps> = ({
     });
   };
 
+  const handleMarkAllOkInRoom = (roomIdx: number) => {
+    setRooms((prev) => {
+      const next = [...prev];
+      const room = { ...next[roomIdx] };
+      room.items = room.items.map((item) => ({ ...item, status: 'ok' as ItemStatus }));
+      room.completed = true;
+      next[roomIdx] = room;
+      return next;
+    });
+  };
+
+  const handleNextRoom = () => {
+    if (activeRoomIndex < rooms.length - 1) {
+      setActiveRoomIndex((prev) => prev + 1);
+    }
+  };
+
+  const handlePrevRoom = () => {
+    if (activeRoomIndex > 0) {
+      setActiveRoomIndex((prev) => prev - 1);
+    }
+  };
+
   // Overall progress
   const totalItemsCount = rooms.reduce((acc, r) => acc + r.items.length, 0);
   const okItemsCount = rooms.reduce(
@@ -185,8 +212,68 @@ export const RoomChecklistSection: React.FC<RoomChecklistSectionProps> = ({
         </div>
       </div>
 
+      {/* Fast Room Switcher Bar */}
+      <div className="py-3 px-3 bg-slate-900 text-white rounded-xl my-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm border border-slate-800">
+        <div className="flex items-center space-x-2 w-full sm:w-auto">
+          <Layers className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-300 shrink-0">
+            Alternar Cômodo:
+          </span>
+
+          {/* Quick Dropdown Selector for 1-Tap Switching on Mobile */}
+          <select
+            value={activeRoomIndex}
+            onChange={(e) => setActiveRoomIndex(Number(e.target.value))}
+            className="flex-1 bg-slate-800 text-white border border-slate-700 font-bold text-xs sm:text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+          >
+            {rooms.map((r, i) => {
+              const rOkCount = r.items.filter((item) => item.status === 'ok' || item.status === 'na').length;
+              const isComplete = rOkCount === r.items.length && r.items.length > 0;
+              return (
+                <option key={r.id} value={i} className="bg-slate-900 text-white py-1">
+                  [{i + 1}/{rooms.length}] {r.name} {isComplete ? '✓ (100% OK)' : `(${rOkCount}/${r.items.length})`}
+                </option>
+              );
+            })}
+          </select>
+        </div>
+
+        {/* Quick Prev / Next Room Navigation Arrows */}
+        <div className="flex items-center space-x-2 w-full sm:w-auto justify-between sm:justify-end">
+          <button
+            onClick={handlePrevRoom}
+            disabled={activeRoomIndex === 0}
+            className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              activeRoomIndex === 0
+                ? 'opacity-40 bg-slate-800 text-slate-500 cursor-not-allowed'
+                : 'bg-slate-800 hover:bg-slate-700 text-white active:scale-95 border border-slate-700'
+            }`}
+          >
+            <ChevronLeft className="w-4 h-4" />
+            <span>Anterior</span>
+          </button>
+
+          <span className="text-xs font-semibold text-emerald-400 sm:hidden">
+            {activeRoomIndex + 1} de {rooms.length}
+          </span>
+
+          <button
+            onClick={handleNextRoom}
+            disabled={activeRoomIndex === rooms.length - 1}
+            className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              activeRoomIndex === rooms.length - 1
+                ? 'opacity-40 bg-slate-800 text-slate-500 cursor-not-allowed'
+                : 'bg-emerald-500 text-slate-950 hover:bg-emerald-400 active:scale-95 font-extrabold'
+            }`}
+          >
+            <span>Próximo</span>
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
       {/* Room Tabs Scrollable Bar */}
-      <div className="flex items-center space-x-2 overflow-x-auto py-4 scrollbar-none border-b border-slate-100">
+      <div className="flex items-center space-x-2 overflow-x-auto pb-3 scrollbar-none border-b border-slate-100">
         {rooms.map((room, idx) => {
           const roomOkCount = room.items.filter((i) => i.status === 'ok' || i.status === 'na').length;
           const roomHasIssues = room.items.some((i) => i.status === 'damaged' || i.status === 'attention');
@@ -196,12 +283,17 @@ export const RoomChecklistSection: React.FC<RoomChecklistSectionProps> = ({
             <button
               key={room.id}
               onClick={() => setActiveRoomIndex(idx)}
-              className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all border ${
+              className={`flex items-center space-x-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all border ${
                 isActive
                   ? 'bg-slate-900 text-white border-slate-900 shadow-md ring-2 ring-emerald-500/30'
                   : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 hover:text-slate-900'
               }`}
             >
+              <span className={`w-4 h-4 rounded-full text-[10px] flex items-center justify-center font-extrabold ${
+                isActive ? 'bg-emerald-500 text-slate-950' : 'bg-slate-200 text-slate-700'
+              }`}>
+                {idx + 1}
+              </span>
               <span className={isActive ? 'text-emerald-400' : 'text-slate-500'}>
                 {getRoomIcon(room.iconName)}
               </span>
@@ -231,27 +323,41 @@ export const RoomChecklistSection: React.FC<RoomChecklistSectionProps> = ({
 
       {/* Active Room Content */}
       {activeRoom && (
-        <div className="pt-5 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200/60">
+        <div className="pt-4 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200/60">
             <div className="flex items-center space-x-2.5">
               <div className="p-2 bg-slate-900 text-emerald-400 rounded-lg">
                 {getRoomIcon(activeRoom.iconName)}
               </div>
               <div>
-                <h3 className="font-bold text-slate-800 text-base">{activeRoom.name}</h3>
+                <div className="flex items-center space-x-2">
+                  <span className="text-[10px] uppercase font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">
+                    Ambiente {activeRoomIndex + 1} de {rooms.length}
+                  </span>
+                </div>
+                <h3 className="font-bold text-slate-800 text-base mt-0.5">{activeRoom.name}</h3>
                 <p className="text-xs text-slate-500">
-                  {activeRoom.items.length} itens no checklist do cômodo • {activeRoom.photos.length} fotos anexadas
+                  {activeRoom.items.length} itens no checklist • {activeRoom.photos.length} fotos
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 shrink-0">
+              <button
+                onClick={() => handleMarkAllOkInRoom(activeRoomIndex)}
+                className="flex items-center space-x-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow-2xs transition-all active:scale-95"
+                title="Marcar todos os itens deste cômodo como OK"
+              >
+                <CheckCheck className="w-4 h-4" />
+                <span>Marcar Todos OK</span>
+              </button>
+
               <button
                 onClick={() => onOpenPhotoModal(activeRoomIndex)}
                 className="flex items-center space-x-1.5 bg-white text-slate-700 hover:bg-slate-100 border border-slate-300 font-semibold px-3 py-1.5 rounded-lg text-xs shadow-2xs transition-all"
               >
                 <Camera className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Fotos do Cômodo ({activeRoom.photos.length})</span>
+                <span>Fotos ({activeRoom.photos.length})</span>
               </button>
             </div>
           </div>
@@ -400,6 +506,49 @@ export const RoomChecklistSection: React.FC<RoomChecklistSectionProps> = ({
             >
               <Plus className="w-4 h-4" />
               <span>Adicionar</span>
+            </button>
+          </div>
+
+          {/* Bottom Room Navigation Toolbar */}
+          <div className="pt-6 mt-4 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <button
+              onClick={handlePrevRoom}
+              disabled={activeRoomIndex === 0}
+              className={`w-full sm:w-auto flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                activeRoomIndex === 0
+                  ? 'opacity-40 bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 active:scale-95'
+              }`}
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>
+                {activeRoomIndex > 0 ? `Voltar: ${rooms[activeRoomIndex - 1].name}` : 'Primeiro Cômodo'}
+              </span>
+            </button>
+
+            <button
+              onClick={() => handleMarkAllOkInRoom(activeRoomIndex)}
+              className="w-full sm:w-auto flex items-center justify-center space-x-1.5 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-300 font-bold px-4 py-2.5 rounded-xl text-xs shadow-2xs active:scale-95"
+            >
+              <CheckCheck className="w-4 h-4 text-emerald-600" />
+              <span>Marcar Todos em "{activeRoom.name}" como OK</span>
+            </button>
+
+            <button
+              onClick={handleNextRoom}
+              disabled={activeRoomIndex === rooms.length - 1}
+              className={`w-full sm:w-auto flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all ${
+                activeRoomIndex === rooms.length - 1
+                  ? 'opacity-40 bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
+                  : 'bg-emerald-500 hover:bg-emerald-600 text-slate-950 shadow-md active:scale-95'
+              }`}
+            >
+              <span>
+                {activeRoomIndex < rooms.length - 1
+                  ? `Próximo: ${rooms[activeRoomIndex + 1].name}`
+                  : 'Último Cômodo'}
+              </span>
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </div>

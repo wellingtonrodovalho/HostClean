@@ -68,8 +68,8 @@ export default function App() {
 
   // Responsible Cleaner Info
   const [cleanerInfo, setCleanerInfo] = useState<CleanerInfo>({
-    name: 'Ana Cláudia Silva',
-    phone: '5511998877665',
+    name: '',
+    phone: '',
   });
 
   // Rooms Checklist State
