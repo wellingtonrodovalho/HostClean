@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Property } from '../types';
 import { Building2, X, Plus, Trash2, MapPin, Wifi } from 'lucide-react';
+import { savePropertyCloud, deletePropertyCloud } from '../lib/firebase';
 
 interface PropertyManagerModalProps {
   isOpen: boolean;
@@ -20,12 +21,14 @@ export const PropertyManagerModal: React.FC<PropertyManagerModalProps> = ({
   const [address, setAddress] = useState('');
   const [wifiName, setWifiName] = useState('');
   const [wifiPass, setWifiPass] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleAddProperty = () => {
+  const handleAddProperty = async () => {
     if (!name.trim() || !address.trim()) return;
 
+    setIsSaving(true);
     const newProp: Property = {
       id: `prop-${Date.now()}`,
       name: name.trim(),
@@ -34,22 +37,38 @@ export const PropertyManagerModal: React.FC<PropertyManagerModalProps> = ({
       wifiPass: wifiPass.trim(),
     };
 
-    setProperties((prev) => [...prev, newProp]);
+    try {
+      await savePropertyCloud(newProp);
+      setProperties((prev) => [...prev, newProp]);
 
-    // Reset
-    setName('');
-    setAddress('');
-    setWifiName('');
-    setWifiPass('');
-    setShowAddForm(false);
+      // Reset
+      setName('');
+      setAddress('');
+      setWifiName('');
+      setWifiPass('');
+      setShowAddForm(false);
+    } catch (err) {
+      console.error('Erro ao salvar imóvel no banco de dados:', err);
+      alert('Ocorreu um erro ao salvar o imóvel na nuvem.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleDeleteProperty = (id: string) => {
+  const handleDeleteProperty = async (id: string) => {
     if (properties.length <= 1) {
       alert('Você precisa ter ao menos um imóvel cadastrado no sistema.');
       return;
     }
-    setProperties((prev) => prev.filter((p) => p.id !== id));
+    if (!confirm('Deseja realmente excluir este imóvel de todos os dispositivos?')) return;
+
+    try {
+      await deletePropertyCloud(id);
+      setProperties((prev) => prev.filter((p) => p.id !== id));
+    } catch (err) {
+      console.error('Erro ao excluir imóvel no banco de dados:', err);
+      alert('Ocorreu um erro ao excluir o imóvel na nuvem.');
+    }
   };
 
   return (

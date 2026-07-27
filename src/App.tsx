@@ -32,6 +32,13 @@ import { SummaryAndExportModal } from './components/SummaryAndExportModal';
 import { HistorySection } from './components/HistorySection';
 import { PropertyManagerModal } from './components/PropertyManagerModal';
 
+import {
+  subscribeToProperties,
+  subscribeToReports,
+  saveReportCloud,
+  deleteReportCloud,
+} from './lib/firebase';
+
 import { CheckCircle2, Send, Sparkles, AlertTriangle, ShieldCheck, FileCheck } from 'lucide-react';
 
 export default function App() {
@@ -100,6 +107,30 @@ export default function App() {
   const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [showPropertyManagerModal, setShowPropertyManagerModal] = useState(false);
   const [viewingHistoryReport, setViewingHistoryReport] = useState<InspectionReport | null>(null);
+
+  // Real-time Cloud Firestore synchronization across devices
+  useEffect(() => {
+    const unsubProps = subscribeToProperties((cloudProps) => {
+      if (cloudProps && cloudProps.length > 0) {
+        setProperties(cloudProps);
+        setSelectedPropertyId((currentId) => {
+          if (!cloudProps.some((p) => p.id === currentId)) {
+            return cloudProps[0].id;
+          }
+          return currentId;
+        });
+      }
+    });
+
+    const unsubReports = subscribeToReports((cloudReports) => {
+      setReportsHistory(cloudReports);
+    });
+
+    return () => {
+      unsubProps();
+      unsubReports();
+    };
+  }, []);
 
   // Sync properties to localStorage
   useEffect(() => {
@@ -208,22 +239,37 @@ export default function App() {
     totalChecklistItems > 0 ? Math.round((okChecklistItems / totalChecklistItems) * 100) : 0;
 
   // Finalize report handler
-  const handleFinalizeReport = (sentToOwner: boolean) => {
+  const handleFinalizeReport = async (sentToOwner: boolean) => {
     const finalReport: InspectionReport = {
       ...currentReport,
       status: sentToOwner ? 'enviado_proprietario' : 'concluido',
       endTime: new Date().toTimeString().slice(0, 5),
     };
 
-    setReportsHistory((prev) => [finalReport, ...prev]);
-    setShowSummaryModal(false);
-    alert('Relatório de limpeza finalizado e salvo com sucesso no histórico!');
-    setActiveTab('history');
+    try {
+      await saveReportCloud(finalReport);
+      setReportsHistory((prev) => [finalReport, ...prev]);
+      setShowSummaryModal(false);
+      alert('Relatório de limpeza finalizado e salvo em nuvem com sucesso!');
+      setActiveTab('history');
+    } catch (err) {
+      console.error('Erro ao salvar relatório na nuvem:', err);
+      alert('Ocorreu um erro ao salvar o relatório na nuvem, mas ele foi salvo localmente.');
+      setReportsHistory((prev) => [finalReport, ...prev]);
+      setShowSummaryModal(false);
+      setActiveTab('history');
+    }
   };
 
-  const handleDeleteHistoryReport = (id: string) => {
-    if (confirm('Tem certeza que deseja excluir este relatório do histórico?')) {
-      setReportsHistory((prev) => prev.filter((r) => r.id !== id));
+  const handleDeleteHistoryReport = async (id: string) => {
+    if (confirm('Tem certeza que deseja excluir este relatório de todos os dispositivos?')) {
+      try {
+        await deleteReportCloud(id);
+        setReportsHistory((prev) => prev.filter((r) => r.id !== id));
+      } catch (err) {
+        console.error('Erro ao deletar relatório na nuvem:', err);
+        setReportsHistory((prev) => prev.filter((r) => r.id !== id));
+      }
     }
   };
 

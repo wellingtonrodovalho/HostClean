@@ -1,0 +1,53 @@
+{
+  "entities": {
+    "properties": {
+      "title": "Property",
+      "description": "Registered properties for cleaning and inspection",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "address": { "type": "string" },
+        "wifiName": { "type": "string" },
+        "wifiPass": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "name", "address"]
+    },
+    "reports": {
+      "title": "InspectionReport",
+      "description": "Inspection and cleaning reports",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "propertyId": { "type": "string" },
+        "propertyName": { "type": "string" },
+        "propertyAddress": { "type": "string" },
+        "wifiName": { "type": "string" },
+        "wifiPass": { "type": "string" },
+        "inspectionDate": { "type": "string" },
+        "startTime": { "type": "string" },
+        "endTime": { "type": "string" },
+        "cleanerName": { "type": "string" },
+        "cleanerPhone": { "type": "string" }
+      },
+      "required": ["id", "propertyName"]
+    }
+  },
+  "securityRules": [
+    {
+      "collection": "properties",
+      "allow": {
+        "read": "true",
+        "write": "true"
+      }
+    },
+    {
+      "collection": "reports",
+      "allow": {
+        "read": "true",
+        "write": "true"
+      }
+    }
+  ]
+}
